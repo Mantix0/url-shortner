@@ -14,7 +14,7 @@ from ..dependencies import get_active_user, get_session
 router = APIRouter(prefix="/api/v1/users", tags=["Работа с пользователями"])
 
 
-@router.post("/register/", summary="Зарегистрировать пользователя")
+@router.post("/register/", summary="Зарегистрировать пользователя", tags=["Public"])
 async def add_user(
     user_data: UserRegistration, session: AsyncSession = Depends(get_session)
 ):
@@ -29,7 +29,7 @@ async def add_user(
     return {"message": "Вы успешно зарегистрированы!"}
 
 
-@router.post("/login/", summary="Авторизовать пользователя")
+@router.post("/login/", summary="Авторизовать пользователя", tags=["Public"])
 async def auth_user(
     response: Response,
     user_data: UserAuth,
@@ -50,14 +50,18 @@ async def auth_user(
     return {"message": "Вы успешно авторизованны!"}
 
 
-@router.get("/current-user/", summary="Получить действующего пользователя")
+@router.get(
+    "/current-user/", summary="Получить действующего пользователя", tags=["Private"]
+)
 async def get_current_user(
     user_data: User = Depends(get_active_user),
 ) -> UserReturn:
     return UserReturn.model_validate(user_data.__dict__)
 
 
-@router.post("/logout/", summary="Деактивировать действующего пользователя")
+@router.post(
+    "/logout/", summary="Деактивировать действующего пользователя", tags=["Private"]
+)
 async def logout_user(response: Response):
     response.delete_cookie(key="users_access_token")
     return {"message": "Пользователь успешно вышел из системы"}

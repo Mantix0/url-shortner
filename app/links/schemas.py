@@ -1,15 +1,15 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field, AnyHttpUrl
-
-
-class LinkInput(BaseModel):
-    link: AnyHttpUrl
+from pydantic import BaseModel, Field, AnyHttpUrl, HttpUrl
 
 
 class LinkReturn(BaseModel):
-    link: AnyHttpUrl
-    orig_link: AnyHttpUrl
+    link: HttpUrl
+
+
+class LinkStatsReturn(BaseModel):
+    link: HttpUrl
+    orig_link: HttpUrl
     last_hour_clicks: int
     last_day_clicks: int
     created_at: datetime

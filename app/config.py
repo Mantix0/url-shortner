@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
     SECRET_KEY: str
     ALGORITHM: str
+    LINK_EXPIRATION_HOURS: int = 24
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
@@ -28,3 +29,7 @@ def get_db_url():
 
 def get_auth_data():
     return {"secret_key": settings.SECRET_KEY, "algorithm": settings.ALGORITHM}
+
+
+def get_expiration_hours():
+    return settings.LINK_EXPIRATION_HOURS

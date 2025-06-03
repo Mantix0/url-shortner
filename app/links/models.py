@@ -1,20 +1,18 @@
 from datetime import datetime
-from typing import List
 
 from sqlalchemy import func, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
-from app.users.models import User
 
 
 class Link(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     link: Mapped[str] = mapped_column(unique=True, nullable=False)
     orig_link: Mapped[str] = mapped_column(unique=True, nullable=False)
-    active: Mapped[bool] = mapped_column(default=True)
     creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    active: Mapped[bool] = mapped_column(default=True)
 
     def __str__(self):
         return (

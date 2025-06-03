@@ -2,10 +2,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
     AsyncAttrs,
-    AsyncSession,
 )
 from sqlalchemy.orm import DeclarativeBase, declared_attr
-from sqlalchemy import Column, Integer, String
 from app.config import get_db_url
 
 SQLALCHEMY_DATABASE_URL = get_db_url()
