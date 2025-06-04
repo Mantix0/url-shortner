@@ -11,7 +11,7 @@ from .dao import UsersDAO
 from .auth import get_password_hash, authenticate_user, create_access_token
 from ..dependencies import get_active_user, get_session
 
-router = APIRouter(prefix="/api/v1/users", tags=["Работа с пользователями"])
+router = APIRouter(prefix="/api/v1/users")
 
 
 @router.post("/register/", summary="Зарегистрировать пользователя", tags=["Public"])
@@ -26,7 +26,7 @@ async def add_user(
     user_dict = user_data.model_dump()
     user_dict["password"] = get_password_hash(user_data.password)
     await UsersDAO.add(user_dict, session)
-    return {"message": "Вы успешно зарегистрированы!"}
+    return {"message": "Registration successful"}
 
 
 @router.post("/login/", summary="Авторизовать пользователя", tags=["Public"])
@@ -47,7 +47,7 @@ async def auth_user(
         key="users_access_token",
         value=access_token,
     )
-    return {"message": "Вы успешно авторизованны!"}
+    return {"message": "Login successful"}
 
 
 @router.get(
@@ -64,4 +64,4 @@ async def get_current_user(
 )
 async def logout_user(response: Response):
     response.delete_cookie(key="users_access_token")
-    return {"message": "Пользователь успешно вышел из системы"}
+    return {"message": "Logout successful"}

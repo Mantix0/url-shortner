@@ -2,7 +2,7 @@ import string
 import random
 from typing import List, Literal
 
-from fastapi import APIRouter, status, Depends, Request
+from fastapi import APIRouter, status, Depends, Request, Response, HTTPException
 from pydantic import HttpUrl
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +11,7 @@ from ..users.models import User
 from .schemas import LinkReturn, LinkStatsReturn
 from ..dependencies import get_active_user, get_session
 
-router = APIRouter(prefix="/api/v1/links", tags=["Работа со ссылками"])
+router = APIRouter(prefix="/api/v1/links")
 
 
 @router.post(
@@ -112,3 +112,21 @@ async def get_link_stats_selection(
 
     result_selection = [LinkStatsReturn.model_validate(i) for i in result_selection]
     return result_selection
+
+
+@router.patch(
+    "/deactivate",
+    summary="Деактивировать ссылку",
+    tags=["Private"],
+)
+async def deactivate_link(
+    input_link: HttpUrl,
+    user_data: User = Depends(get_active_user),
+    session: AsyncSession = Depends(get_session),
+):
+    result = await LinksDAO.deactivate(str(input_link), session)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Link not found"
+        )
+    return {"message": "Link successfully deactivated"}

@@ -35,20 +35,20 @@ async def get_active_user(
         )
     except JWTError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Токен не валидный!"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is invalid!"
         )
 
     expire = payload.get("exp")
     expire_time = datetime.fromtimestamp(int(expire), tz=timezone.utc)
     if (not expire) or (expire_time < datetime.now(timezone.utc)):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Токен истек"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is expired"
         )
 
     user_id = payload.get("sub")
     if not user_id:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Не найден ID пользователя"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User_id not found"
         )
 
     user = await UsersDAO.get_user_by_id(int(user_id), session)

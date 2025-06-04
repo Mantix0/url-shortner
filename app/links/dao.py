@@ -1,19 +1,22 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import func
+from sqlalchemy import func, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sqlalchemy.future import select
 
 from app.config import get_expiration_hours
+from app.database import BaseDAO
 from app.links.models import Link, LinkClick
 
 
-class LinksDAO:
+class LinksDAO(BaseDAO):
+    model = Link
+
     @classmethod
     async def add(cls, link, orig_link, user_id, session: AsyncSession) -> Link:
-        new_instance = Link(link=link, orig_link=orig_link, creator_id=user_id)
+        new_instance = cls.model(link=link, orig_link=orig_link, creator_id=user_id)
         session.add(new_instance)
         try:
             await session.commit()
@@ -31,12 +34,12 @@ class LinksDAO:
         active_only=False,
         unexpired_only=False,
     ):
-        query = select(Link).limit(limit).offset(offset)
+        query = select(cls.model).limit(limit).offset(offset)
         if active_only:
             query = query.filter_by(active=True)
         if unexpired_only:
             query = query.where(
-                Link.created_at
+                cls.model.created_at
                 >= datetime.now() - timedelta(hours=get_expiration_hours())
             )
         result = await session.execute(query)
@@ -44,21 +47,31 @@ class LinksDAO:
 
     @classmethod
     async def get_link(cls, link, session: AsyncSession) -> Link:
-        query = select(Link).filter_by(link=link)
+        query = select(cls.model).filter_by(link=link)
         result = await session.execute(query)
         return result.scalar_one_or_none()
 
     @classmethod
     async def get_link_by_orig(cls, orig_link, session: AsyncSession) -> Link:
-        query = select(Link).filter_by(orig_link=orig_link)
+        query = select(cls.model).filter_by(orig_link=orig_link)
         result = await session.execute(query)
         return result.scalar_one_or_none()
 
+    @classmethod
+    async def deactivate(cls, link, session: AsyncSession):
 
-class LinkClicksDAO:
+        query = update(cls.model).filter_by(link=link).values(active=False)
+        result = await session.execute(query)
+        await session.commit()
+        return result.rowcount != 0
+
+
+class LinkClicksDAO(BaseDAO):
+    model = LinkClick
+
     @classmethod
     async def add(cls, link_id, session: AsyncSession):
-        new_instance = LinkClick(link_id=link_id)
+        new_instance = cls.model(link_id=link_id)
         session.add(new_instance)
         try:
             await session.commit()
@@ -72,9 +85,9 @@ class LinkClicksDAO:
         day_ago = datetime.now() - timedelta(hours=24)
         query = (
             select(func.count())
-            .select_from(LinkClick)
+            .select_from(cls.model)
             .filter_by(link_id=link_id)
-            .where(LinkClick.created_at >= day_ago)
+            .where(cls.model.created_at >= day_ago)
         )
         result = await session.execute(query)
         return result.scalar_one_or_none()
@@ -84,9 +97,9 @@ class LinkClicksDAO:
         hour_ago = datetime.now() - timedelta(hours=1)
         query = (
             select(func.count())
-            .select_from(LinkClick)
+            .select_from(cls.model)
             .filter_by(link_id=link_id)
-            .where(LinkClick.created_at >= hour_ago)
+            .where(cls.model.created_at >= hour_ago)
         )
 
         result = await session.execute(query)

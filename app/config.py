@@ -1,15 +1,23 @@
 import os
+import random
+import string
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    DB_HOST: str
-    DB_PORT: int
-    DB_NAME: str
-    DB_USER: str
-    DB_PASSWORD: str
-    SECRET_KEY: str
-    ALGORITHM: str
+    DB_HOST: str = "localhost"
+    DB_PORT: int = "5432"
+    DB_NAME: str = "link_shortner_db"
+    DB_USER: str = "postgres"
+    DB_PASSWORD: str = "postgres"
+    SECRET_KEY: str = "".join(
+        [
+            random.choice(string.ascii_letters + string.digits + string.punctuation)
+            for n in range(63)
+        ]
+    )
+    ALGORITHM: str = "HS256"
     LINK_EXPIRATION_HOURS: int = 24
 
     model_config = SettingsConfigDict(

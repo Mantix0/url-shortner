@@ -32,5 +32,5 @@ async def redirect_to_original(
             raise Exception
     except Exception:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Ссылка истекла или неактивна"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Link is inactive or expired"
         )
